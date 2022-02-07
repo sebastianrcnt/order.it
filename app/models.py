@@ -19,25 +19,27 @@ class MenuCategory(models.Model):
     def __str__(self):
         return f'{self.restaurant.name}/{self.name}'
 
-class Menu(models.Model):
+class Orderable(models.Model):
+    class Meta:
+        abstract = True
+    price = models.FloatField(default=0)
+
+class Menu(Orderable):
     name = models.CharField(max_length=500)
     description = models.CharField(max_length=500, blank=True, null=True)
-    price = models.FloatField()
-    image = models.ImageField(upload_to="uploads/menus/background/", blank=True, null=True)
+    image = models.ImageField(upload_to="uploads/menus/images/", blank=True, null=True)
     menu_category = models.ForeignKey(MenuCategory, on_delete=models.CASCADE, blank=True, null=True)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, blank=True, null=True)
     
-    def get_restaurant(self):
-        return self.menu_category.restaurant
-
     def __str__(self):
         return f'{self.menu_category}/{self.name}'
     # https://books.agiliq.com/projects/django-admin-cookbook/en/latest/nested_inlines.html
+
     def save(self, *args, **kwargs):
         self.restaurant = self.menu_category.restaurant
         super().save(*args, **kwargs)
 
-class MenuOption(models.Model):
+class MenuOption(Orderable):
     name = models.CharField(max_length=300)
     description = models.CharField(max_length=500, blank=True, null=True)
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE, blank=True, null=True)
